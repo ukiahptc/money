@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="빚갚기">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <title>빚 갚는 가계부</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="view" class="view"></main>
+
+  <nav class="tabbar" aria-label="메뉴">
+    <button class="tab" data-tab="dashboard" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4zm10 7h6V11h-6zM4 20h6v-4H4zm10-11h6V4h-6z"/></svg>
+      <span>대시보드</span>
+    </button>
+    <button class="tab" data-tab="ledger" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm2 4v2h8V7zm0 4v2h8v-2zm0 4v2h5v-2z"/></svg>
+      <span>가계부</span>
+    </button>
+    <button class="tab" data-tab="budget" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 3.05V13h9.95A9 9 0 1 1 11 3.05zM13 3.05A9 9 0 0 1 20.95 11H13z"/></svg>
+      <span>소비 계획</span>
+    </button>
+    <button class="tab" data-tab="loan" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8l9-5 9 5v2H3zm2 4h2v6H5zm4 0h2v6H9zm4 0h2v6h-2zm4 0h2v6h-2zM3 20h18v2H3z"/></svg>
+      <span>대출</span>
+    </button>
+  </nav>
+
+  <script src="js/utils.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/loan.js"></script>
+  <script src="js/views/loan-view.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

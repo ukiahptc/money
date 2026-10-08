@@ -1,0 +1,191 @@
+/* ---------- 색상 토큰 ---------- */
+:root {
+  --bg: #f2f2f7;
+  --card: #ffffff;
+  --text: #1c1c1e;
+  --muted: #6e6e73;
+  --line: #e3e3e8;
+  --field: #f2f2f7;
+  --accent: #0b7a55;
+  --accent-soft: #e3f4ec;
+  --accent-text: #ffffff;
+  --base-line: #a1a1a8;
+  --danger: #d70015;
+  --radius: 14px;
+  --tabbar-h: 56px;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #000000;
+    --card: #1c1c1e;
+    --text: #f2f2f7;
+    --muted: #98989f;
+    --line: #38383a;
+    --field: #2c2c2e;
+    --accent: #32d48f;
+    --accent-soft: #10301f;
+    --accent-text: #00140a;
+    --base-line: #6e6e73;
+    --danger: #ff6961;
+  }
+}
+
+/* ---------- 기본 ---------- */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Pretendard", "Malgun Gothic", sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+}
+.view {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: calc(env(safe-area-inset-top) + 12px) 16px calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 24px);
+}
+h1 { font-size: 30px; margin: 8px 0 14px; letter-spacing: -0.02em; }
+h3 { font-size: 17px; margin: 0 0 4px; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.accent { color: var(--accent); }
+.num, .tile-value, .summary-value, .sched td { font-variant-numeric: tabular-nums; }
+
+/* ---------- 카드 ---------- */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.empty-card { color: var(--muted); text-align: center; padding: 40px 16px; }
+
+.summary { background: var(--accent); color: var(--accent-text); }
+.summary-label { font-size: 14px; opacity: 0.85; }
+.summary-value { font-size: 32px; font-weight: 700; letter-spacing: -0.02em; margin: 2px 0 12px; }
+.summary-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.summary-row div { display: flex; flex-direction: column; }
+.summary-row span { font-size: 12px; opacity: 0.85; }
+.summary-row strong { font-size: 14px; }
+.summary-note { font-size: 12px; opacity: 0.85; margin-top: 10px; }
+
+/* ---------- 입력 ---------- */
+.card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.title-input { flex: 1; font-size: 20px !important; font-weight: 700; background: transparent !important; padding: 4px 0 !important; }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; min-width: 0; }
+.grid2 .field { margin-bottom: 0; }
+.grid2 + .field { margin-top: 12px; }
+.field-label { font-size: 13px; color: var(--muted); }
+.field-hint { font-size: 12px; color: var(--muted); min-height: 1em; }
+
+.input {
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: 16px; /* 16px 미만이면 iOS가 확대함 */
+  color: var(--text);
+  background: var(--field);
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 12px;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.input:focus { outline: 2px solid var(--accent); outline-offset: 0; }
+input[type="month"].input { min-height: 44px; }
+
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--field); border-radius: 10px; padding: 3px; gap: 3px; }
+.seg-btn {
+  font: inherit; font-size: 14px; color: var(--text);
+  background: transparent; border: 0; border-radius: 8px; padding: 9px 4px; cursor: pointer;
+}
+.seg-btn[aria-pressed="true"] { background: var(--card); font-weight: 600; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); }
+
+.slider { width: 100%; accent-color: var(--accent); margin: 4px 0 0; height: 28px; }
+.slider-scale { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+
+/* ---------- 버튼 ---------- */
+.btn {
+  font: inherit; font-weight: 600; font-size: 15px;
+  background: var(--accent); color: var(--accent-text);
+  border: 0; border-radius: 12px; padding: 12px 16px; cursor: pointer;
+}
+.btn.small { font-size: 14px; padding: 9px 12px; margin-top: 10px; }
+.btn.ghost { background: var(--card); color: var(--accent); }
+.block-btn { width: 100%; margin-bottom: 14px; }
+.link-btn { font: inherit; font-size: 14px; background: none; border: 0; padding: 8px; cursor: pointer; color: var(--accent); }
+.link-btn.danger { color: var(--danger); }
+
+/* ---------- 결과 ---------- */
+.results { margin-top: 16px; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tile { background: var(--field); border-radius: 12px; padding: 10px; min-width: 0; }
+.tile.good { background: var(--accent-soft); }
+.tile-label { font-size: 12px; color: var(--muted); }
+.tile-value { font-size: 15px; font-weight: 700; margin-top: 2px; word-break: keep-all; overflow-wrap: anywhere; }
+.tile.good .tile-value { color: var(--accent); }
+.tile-sub { font-size: 11px; color: var(--muted); margin-top: 2px; word-break: keep-all; }
+.empty-hint { color: var(--muted); font-size: 14px; text-align: center; padding: 16px 0 4px; margin: 0; }
+
+.block { border-top: 1px solid var(--line); margin-top: 18px; padding-top: 16px; }
+.block p { margin: 0 0 12px; }
+.extra-out { margin-bottom: 12px; }
+
+.callout { background: var(--field); border-radius: 12px; padding: 12px; margin: 0; }
+.callout.good { background: var(--accent-soft); color: var(--accent); }
+.callout strong { color: var(--accent); }
+.callout .small { margin-top: 4px; }
+
+/* ---------- 그래프 ---------- */
+.chart-wrap { background: var(--field); border-radius: 12px; padding: 10px 10px 8px; }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart .axis { stroke: var(--line); stroke-width: 1; }
+.chart .line-base { fill: none; stroke: var(--base-line); stroke-width: 2; stroke-dasharray: 4 4; }
+.chart .line-plan { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
+.chart .dot-plan { fill: var(--accent); }
+.chart .tick { font-size: 10px; fill: var(--muted); }
+.chart .tick.plan { fill: var(--accent); font-weight: 600; }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 6px; }
+.lg::before { content: ""; display: inline-block; width: 14px; height: 0; vertical-align: middle; margin-right: 5px; border-top: 2px dashed var(--base-line); }
+.lg.plan::before { border-top: 2.5px solid var(--accent); }
+
+/* ---------- 스케줄 표 ---------- */
+.sched-details { border-top: 1px solid var(--line); margin-top: 18px; padding-top: 14px; }
+.sched-details summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+.table-wrap { max-height: 420px; overflow: auto; margin-top: 10px; -webkit-overflow-scrolling: touch; }
+.sched { width: 100%; border-collapse: collapse; font-size: 13px; }
+.sched th, .sched td { padding: 7px 4px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.sched th:first-child, .sched td:first-child { text-align: left; }
+.sched th { position: sticky; top: 0; background: var(--card); color: var(--muted); font-weight: 500; }
+
+.footnote { font-size: 12px; color: var(--muted); padding: 0 4px; }
+
+/* ---------- 하단 탭바 ---------- */
+.tabbar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(18px);
+  backdrop-filter: saturate(180%) blur(18px);
+  border-top: 1px solid var(--line);
+}
+.tab {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  font: inherit; font-size: 11px; color: var(--muted);
+  background: none; border: 0; cursor: pointer;
+}
+.tab svg { width: 24px; height: 24px; fill: currentColor; }
+.tab[aria-current="page"] { color: var(--accent); }
+
+@media (max-width: 360px) {
+  .tiles { grid-template-columns: 1fr 1fr; }
+  .summary-row { grid-template-columns: 1fr 1fr; }
+}
