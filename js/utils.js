@@ -31,6 +31,20 @@ const U = {
     if (!y) return `${m}개월`;
     return m ? `${y}년 ${m}개월` : `${y}년`;
   },
+  // 세그먼트 버튼: options = {key: label}
+  segmented(options, current, onChange) {
+    const wrap = U.el('div', { class: 'seg', role: 'group' });
+    for (const [key, label] of Object.entries(options)) {
+      const b = U.el('button', { type: 'button', class: 'seg-btn', 'aria-pressed': String(key === current) }, label);
+      b.addEventListener('click', () => {
+        wrap.querySelectorAll('.seg-btn').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+        b.setAttribute('aria-pressed', 'true');
+        onChange(key);
+      });
+      wrap.append(b);
+    }
+    return wrap;
+  },
   uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   },
