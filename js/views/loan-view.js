@@ -8,12 +8,17 @@ const LoanView = (() => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   }
 
-  function newLoan() {
+  function newLoan(name = '대출', balance = 0) {
     return {
-      id: U.uid(), name: '대출', balance: 8000000, rate: null,
+      id: U.uid(), name, balance, rate: null,
       method: 'annuity', months: null, startYm: nextYm(),
       extra: 0, targetMonths: null,
     };
+  }
+
+  // 첫 실행 기본 대출 목록. 비상금 대출은 금액·금리를 몰라 비워 둔다
+  function seedLoans() {
+    return [newLoan('신용 대출', 8000000), newLoan('비상금 대출', 0)];
   }
 
   /* ---------- 입력 컴포넌트 ---------- */
@@ -338,10 +343,7 @@ const LoanView = (() => {
 
     const addBtn = el('button', { type: 'button', class: 'btn ghost block-btn' }, '+ 대출 추가');
     addBtn.addEventListener('click', () => {
-      const l = newLoan();
-      l.name = `대출 ${state.loans.length + 1}`;
-      l.balance = 0;
-      state.loans.push(l);
+      state.loans.push(newLoan(`대출 ${state.loans.length + 1}`));
       Store.save();
       render(root);
       root.querySelector('.loan-card:last-of-type')?.scrollIntoView({ behavior: 'smooth' });
@@ -356,5 +358,5 @@ const LoanView = (() => {
     );
   }
 
-  return { render, newLoan };
+  return { render, newLoan, seedLoans };
 })();

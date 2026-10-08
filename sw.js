@@ -1,6 +1,6 @@
 /* 오프라인용 서비스 워커. 네트워크 우선, 실패하면 캐시.
  * 파일을 고치면 CACHE 버전을 올려야 옛 캐시가 지워진다. */
-const CACHE = 'money-v5';
+const CACHE = 'money-v6';
 const FILES = [
   './', './index.html', './css/style.css', './manifest.json',
   './js/utils.js', './js/storage.js', './js/loan.js', './js/ledger.js', './js/budget.js', './js/backup.js',

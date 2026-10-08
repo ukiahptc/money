@@ -21,7 +21,7 @@
 
   Store.load();
   if (!Store.state.loans.length && !Store.state.entries.length) {
-    Store.state.loans.push(LoanView.newLoan());
+    Store.state.loans.push(...LoanView.seedLoans());
     Store.save();
   }
   // 오프라인·홈 화면 앱용 (file:// 로 열면 지원 안 됨)
