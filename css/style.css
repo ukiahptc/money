@@ -176,7 +176,7 @@ input[type="month"].input { min-height: 44px; }
 }
 .today-btn { margin-left: auto; }
 
-.ledger-sum .sum-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sum-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .sum-grid div { display: flex; flex-direction: column; min-width: 0; }
 .sum-grid span { font-size: 12px; color: var(--muted); }
 .sum-grid strong { font-size: 16px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
@@ -254,6 +254,37 @@ input[type="month"].input { min-height: 44px; }
 }
 .chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .btn.danger-ghost { background: transparent; color: var(--danger); margin: 8px 0 0; }
+
+/* ---------- 소비 계획 ---------- */
+.icon-btn.sm { width: 32px; height: 32px; font-size: 16px; background: var(--field); }
+.icon-btn.danger { color: var(--danger); }
+.icon-btn:disabled { opacity: 0.3; cursor: default; }
+
+.budget-bar { height: 8px; background: var(--field); border-radius: 4px; overflow: hidden; margin: 6px 0 4px; }
+.budget-bar span { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.budget-bar.big { height: 10px; margin-top: 12px; }
+.over .budget-bar span, .budget-bar.over span { background: var(--danger); }
+
+.budget-list { list-style: none; margin: 0; padding: 0; }
+.budget-row { padding: 10px 0; border-top: 1px solid var(--line); }
+.budget-row.idle { opacity: 0.75; }
+.budget-top { display: grid; grid-template-columns: 1fr auto 112px; align-items: center; gap: 8px; }
+.budget-label { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.budget-spent { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.budget-inp { padding: 8px 10px !important; text-align: right; }
+.budget-note { color: var(--muted); min-height: 1em; }
+.over .budget-note { color: var(--danger); }
+
+.calc-line { display: flex; justify-content: space-between; padding: 5px 0; font-size: 15px; }
+.calc-line.total { border-top: 1px solid var(--line); margin-top: 4px; padding-top: 9px; }
+.calc-line.total strong { color: var(--accent); font-size: 18px; }
+.calc-line.total.neg strong { color: var(--danger); }
+
+.cat-scroll { max-height: 48dvh; overflow: auto; -webkit-overflow-scrolling: touch; }
+.cat-list { list-style: none; margin: 0; padding: 0; }
+.cat-row { display: grid; grid-template-columns: 1fr 32px 32px 32px; gap: 6px; align-items: center; padding: 4px 0; }
+.cat-name { padding: 8px 10px !important; }
+.cat-add { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 12px; }
 
 /* ---------- 하단 탭바 ---------- */
 .tabbar {

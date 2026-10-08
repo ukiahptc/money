@@ -16,7 +16,7 @@
   const VIEWS = {
     dashboard: placeholder('대시보드', 4),
     ledger: LedgerView,
-    budget: placeholder('소비 계획', 3),
+    budget: BudgetView,
     loan: LoanView,
   };
 

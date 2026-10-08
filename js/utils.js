@@ -45,6 +45,26 @@ const U = {
     }
     return wrap;
   },
+  // 월 이동 바: onChange(ym)
+  monthNav(month, onChange) {
+    const isNow = month === Ledger.thisMonth();
+    return U.el('div', { class: 'month-nav' }, [
+      U.el('button', { type: 'button', class: 'icon-btn', 'aria-label': '이전 달', onclick: () => onChange(Ledger.shiftMonth(month, -1)) }, '‹'),
+      U.el('strong', {}, U.ymLabel(month)),
+      U.el('button', { type: 'button', class: 'icon-btn', 'aria-label': '다음 달', onclick: () => onChange(Ledger.shiftMonth(month, 1)) }, '›'),
+      isNow ? null : U.el('button', { type: 'button', class: 'link-btn today-btn', onclick: () => onChange(Ledger.thisMonth()) }, '이번 달'),
+    ]);
+  },
+  // 하단 시트. body(dlg)가 내용 노드를 돌려준다
+  sheet(label, body) {
+    const dlg = U.el('dialog', { class: 'sheet', 'aria-label': label });
+    dlg.append(U.el('div', { class: 'sheet-grip', 'aria-hidden': 'true' }), body(dlg));
+    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+    dlg.addEventListener('close', () => dlg.remove());
+    document.body.append(dlg);
+    dlg.showModal();
+    return dlg;
+  },
   uid() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   },

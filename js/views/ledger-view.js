@@ -19,7 +19,7 @@ const LedgerView = (() => {
           date: month === Ledger.thisMonth() ? Ledger.today() : `${month}-01`,
         };
 
-    const dlg = el('dialog', { class: 'sheet', 'aria-label': isNew ? '내역 추가' : '내역 수정' });
+    let dlg;
     const error = el('p', { class: 'form-error', role: 'alert' });
 
     const amountInp = el('input', {
@@ -34,7 +34,7 @@ const LedgerView = (() => {
 
     const chips = el('div', { class: 'chips' });
     function renderChips() {
-      const cats = Ledger.CATEGORIES[draft.type];
+      const cats = Ledger.cats(draft.type);
       if (!cats.some((c) => c.id === draft.category)) draft.category = last[draft.type] || cats[0].id;
       chips.replaceChildren(...cats.map((c) => {
         const b = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(c.id === draft.category) }, c.label);
@@ -49,11 +49,9 @@ const LedgerView = (() => {
 
     const typeSeg = U.segmented(Ledger.TYPES, draft.type, (t) => {
       draft.type = t;
-      dlg.dataset.type = t;
+      if (dlg) dlg.dataset.type = t;
       renderChips();
     });
-    dlg.dataset.type = draft.type;
-
     const dateInp = el('input', { type: 'date', class: 'input', value: draft.date, 'aria-label': '날짜' });
     dateInp.addEventListener('change', () => { draft.date = dateInp.value; });
     const memoInp = el('input', { type: 'text', class: 'input', maxlength: 40, placeholder: '예: 점심 김밥', value: draft.memo || '', 'aria-label': '메모' });
@@ -83,9 +81,8 @@ const LedgerView = (() => {
       render(root);
     }
 
-    dlg.append(
+    dlg = U.sheet(isNew ? '내역 추가' : '내역 수정', () =>
       el('form', { class: 'sheet-body', onsubmit: (e) => { e.preventDefault(); save(); } }, [
-        el('div', { class: 'sheet-grip', 'aria-hidden': 'true' }),
         el('div', { class: 'sheet-head' }, [
           el('button', { type: 'button', class: 'link-btn', onclick: () => dlg.close() }, '취소'),
           el('strong', {}, isNew ? '내역 추가' : '내역 수정'),
@@ -102,28 +99,11 @@ const LedgerView = (() => {
         isNew ? null : el('button', { type: 'button', class: 'btn danger-ghost block-btn', onclick: remove }, '이 내역 삭제'),
       ])
     );
-    dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); }); // 바깥 터치로 닫기
-    dlg.addEventListener('close', () => dlg.remove());
-    document.body.append(dlg);
-    dlg.showModal();
+    dlg.dataset.type = draft.type;
     if (isNew) amountInp.focus();
   }
 
   /* ---------- 화면 구성 ---------- */
-
-  function monthNav() {
-    const go = (k) => { month = Ledger.shiftMonth(month, k); filterCat = null; render(root); };
-    const isNow = month === Ledger.thisMonth();
-    return el('div', { class: 'month-nav' }, [
-      el('button', { type: 'button', class: 'icon-btn', 'aria-label': '이전 달', onclick: () => go(-1) }, '‹'),
-      el('strong', {}, ymLabel(month)),
-      el('button', { type: 'button', class: 'icon-btn', 'aria-label': '다음 달', onclick: () => go(1) }, '›'),
-      isNow ? null : el('button', {
-        type: 'button', class: 'link-btn today-btn',
-        onclick: () => { month = Ledger.thisMonth(); filterCat = null; render(root); },
-      }, '이번 달'),
-    ]);
-  }
 
   function summaryCard(t) {
     return el('section', { class: 'card ledger-sum' }, [
@@ -194,7 +174,7 @@ const LedgerView = (() => {
 
     root.replaceChildren(...[
       el('header', { class: 'page-head' }, [el('h1', {}, '가계부')]),
-      monthNav(),
+      U.monthNav(month, (ym) => { month = ym; filterCat = null; render(root); }),
       summaryCard(t),
       cats.length ? breakdownCard(cats, t.expense) : null,
       listSection(shown),

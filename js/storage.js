@@ -1,7 +1,9 @@
 /* 데이터 저장 — 브라우저 localStorage (기기별 저장, 동기화 없음) */
 const Store = (() => {
   const KEY = 'money.v1';
-  const defaults = () => ({ version: 1, loans: [], entries: [], ui: { tab: 'loan' } });
+  const defaults = () => ({
+    version: 1, loans: [], entries: [], budgets: {}, categories: null, ui: { tab: 'loan' },
+  });
   let state = defaults();
 
   function load() {
@@ -11,7 +13,27 @@ const Store = (() => {
     } catch (e) {
       state = defaults();
     }
+    migrate();
     return state;
+  }
+
+  // 기본 카테고리 채우기 (가져오기한 옛 데이터에도 적용)
+  function migrate() {
+    if (!state.categories) {
+      state.categories = JSON.parse(JSON.stringify(Ledger.DEFAULT_CATEGORIES));
+    }
+    if (!state.budgets) state.budgets = {};
+    if (!state.ui) state.ui = { tab: 'loan' };
+  }
+
+  // 백업 파일에서 통째로 교체
+  function replace(data) {
+    if (!data || typeof data !== 'object' || !Array.isArray(data.loans) || !Array.isArray(data.entries)) {
+      throw new Error('백업 파일 형식이 아닙니다.');
+    }
+    state = { ...defaults(), ...data };
+    migrate();
+    save();
   }
 
   function save() {
@@ -22,5 +44,5 @@ const Store = (() => {
     }
   }
 
-  return { load, save, get state() { return state; } };
+  return { load, save, replace, get state() { return state; } };
 })();
