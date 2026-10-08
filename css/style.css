@@ -118,6 +118,7 @@ input[type="month"].input { min-height: 44px; }
 }
 .btn.small { font-size: 14px; padding: 9px 12px; margin-top: 10px; }
 .btn.ghost { background: var(--card); color: var(--accent); }
+.card .btn.ghost { background: var(--field); }
 .block-btn { width: 100%; margin-bottom: 14px; }
 .link-btn { font: inherit; font-size: 14px; background: none; border: 0; padding: 8px; cursor: pointer; color: var(--accent); }
 .link-btn.danger { color: var(--danger); }
@@ -285,6 +286,26 @@ input[type="month"].input { min-height: 44px; }
 .cat-row { display: grid; grid-template-columns: 1fr 32px 32px 32px; gap: 6px; align-items: center; padding: 4px 0; }
 .cat-name { padding: 8px 10px !important; }
 .cat-add { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 12px; }
+
+/* ---------- 대시보드 ---------- */
+.summary[role="button"] { cursor: pointer; }
+.progress-wrap { margin: 2px 0 14px; }
+.progress { height: 10px; background: rgba(0, 0, 0, 0.18); border-radius: 5px; overflow: hidden; }
+.progress span { display: block; height: 100%; background: var(--accent-text); border-radius: 5px; opacity: 0.95; }
+.progress-text { display: flex; justify-content: space-between; font-size: 12px; margin-top: 5px; opacity: 0.9; }
+.summary .summary-value { margin-bottom: 8px; }
+.budget-mini { margin-top: 12px; cursor: pointer; }
+.budget-mini .progress-text { color: var(--muted); }
+.link-btn.inline { padding: 0; font-size: inherit; }
+.chart .bar-other { fill: var(--accent); }
+.chart .bar-loan { fill: var(--base-line); }
+.chart .val { font-size: 9px; fill: var(--muted); }
+.chart .tick.now { fill: var(--accent); font-weight: 600; }
+.lg.sq::before { width: 10px; height: 10px; border: 0; border-radius: 2px; background: var(--accent); }
+.lg.sq.loan::before { background: var(--base-line); }
+.entries.recent { padding: 0; }
+.entries.recent .entry { padding: 10px 0; cursor: default; }
+.entry-memo small { font-size: 11px; }
 
 /* ---------- 하단 탭바 ---------- */
 .tabbar {

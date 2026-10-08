@@ -1,20 +1,7 @@
 /* 앱 진입점: 탭 전환 */
 (() => {
-  const { el } = U;
-
-  const placeholder = (title, section) => ({
-    render(root) {
-      root.replaceChildren(
-        el('header', { class: 'page-head' }, [el('h1', {}, title)]),
-        el('div', { class: 'card empty-card' }, [
-          el('p', {}, `섹션 ${section}에서 추가될 화면입니다.`),
-        ])
-      );
-    },
-  });
-
   const VIEWS = {
-    dashboard: placeholder('대시보드', 4),
+    dashboard: DashboardView,
     ledger: LedgerView,
     budget: BudgetView,
     loan: LoanView,
@@ -33,9 +20,13 @@
   }
 
   Store.load();
-  if (!Store.state.loans.length) {
+  if (!Store.state.loans.length && !Store.state.entries.length) {
     Store.state.loans.push(LoanView.newLoan());
     Store.save();
+  }
+  // 오프라인·홈 화면 앱용 (file:// 로 열면 지원 안 됨)
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
   }
   tabs.forEach((t) => t.addEventListener('click', () => show(t.dataset.tab)));
   show(Store.state.ui.tab);
