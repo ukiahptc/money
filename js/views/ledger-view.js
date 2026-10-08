@@ -14,7 +14,7 @@ const LedgerView = (() => {
     const draft = entry
       ? { ...entry }
       : {
-          type: 'expense', amount: 0, memo: '',
+          type: 'expense', amount: 0, memo: '', pay: state.ui.lastPay || 'card',
           category: last.expense || 'food',
           date: month === Ledger.thisMonth() ? Ledger.today() : `${month}-01`,
         };
@@ -50,8 +50,15 @@ const LedgerView = (() => {
     const typeSeg = U.segmented(Ledger.TYPES, draft.type, (t) => {
       draft.type = t;
       if (dlg) dlg.dataset.type = t;
+      payField.hidden = t === 'income';
       renderChips();
     });
+    const PAY = { card: '신용카드', cash: '현금·체크' };
+    const payField = el('div', { class: 'field pay-field' }, [
+      el('span', { class: 'field-label' }, '결제 수단'),
+      U.segmented(PAY, draft.pay || 'card', (k) => { draft.pay = k; }),
+      el('span', { class: 'field-hint' }, '신용카드는 다음 달 카드값으로, 현금·체크는 바로 보유 금액에서 빠집니다.'),
+    ]);
     const dateInp = el('input', { type: 'date', class: 'input', value: draft.date, 'aria-label': '날짜' });
     dateInp.addEventListener('change', () => { draft.date = dateInp.value; });
     const memoInp = el('input', { type: 'text', class: 'input', maxlength: 40, placeholder: '예: 점심 김밥', value: draft.memo || '', 'aria-label': '메모' });
@@ -67,6 +74,7 @@ const LedgerView = (() => {
         Object.assign(state.entries.find((e) => e.id === entry.id), draft);
       }
       state.ui.lastCat = { ...last, [draft.type]: draft.category };
+      if (draft.type === 'expense') state.ui.lastPay = draft.pay || 'card';
       Store.save();
       month = draft.date.slice(0, 7); // 저장한 내역이 보이는 달로 이동
       dlg.close();
@@ -92,6 +100,7 @@ const LedgerView = (() => {
         el('label', { class: 'amount-field' }, [amountInp, el('span', {}, '원')]),
         error,
         el('div', { class: 'field' }, [el('span', { class: 'field-label' }, '카테고리'), chips]),
+        payField,
         el('div', { class: 'grid2' }, [
           el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '날짜'), dateInp]),
           el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '메모'), memoInp]),
@@ -100,6 +109,7 @@ const LedgerView = (() => {
       ])
     );
     dlg.dataset.type = draft.type;
+    payField.hidden = draft.type === 'income';
     if (isNew) amountInp.focus();
   }
 
@@ -141,7 +151,7 @@ const LedgerView = (() => {
     const sign = e.type === 'income' ? '+' : '-';
     return el('li', {}, el('button', { type: 'button', class: 'entry', onclick: () => openSheet(e) }, [
       el('span', { class: 'entry-cat' + (e.type === 'income' ? ' income' : '') }, Ledger.catLabel(e.type, e.category)),
-      el('span', { class: 'entry-memo' }, e.memo || ''),
+      el('span', { class: 'entry-memo' }, [e.memo || '', e.type === 'expense' && e.pay === 'cash' ? el('small', { class: 'pay-badge' }, '현금') : null]),
       el('span', { class: 'entry-amt num' + (e.type === 'income' ? ' income' : '') }, sign + comma(e.amount)),
     ]));
   }

@@ -307,6 +307,19 @@ input[type="month"].input { min-height: 44px; }
 .entries.recent .entry { padding: 10px 0; cursor: default; }
 .entry-memo small { font-size: 11px; }
 
+/* ---------- 현금 흐름 ---------- */
+.calc-line.bill { font-size: 14px; }
+.calc-line > span:first-child { min-width: 0; }
+.calc-line strong { white-space: nowrap; margin-left: 8px; }
+.calc-line.plus strong { color: var(--accent); }
+.calc-line.muted-line { color: var(--muted); }
+.calc-line small { font-size: 11px; }
+.bill-right { display: flex; flex-direction: column; align-items: flex-end; }
+.link-btn.tiny { font-size: 12px; padding: 2px 0; }
+.cash-actions { display: flex; gap: 14px; margin-top: 6px; }
+.pay-badge { font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
+.pay-field .seg { grid-auto-columns: 1fr; }
+
 /* ---------- 하단 탭바 ---------- */
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;

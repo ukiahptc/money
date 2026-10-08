@@ -1,9 +1,9 @@
 /* 오프라인용 서비스 워커. 네트워크 우선, 실패하면 캐시.
  * 파일을 고치면 CACHE 버전을 올려야 옛 캐시가 지워진다. */
-const CACHE = 'money-v6';
+const CACHE = 'money-v7';
 const FILES = [
   './', './index.html', './css/style.css', './manifest.json',
-  './js/utils.js', './js/storage.js', './js/loan.js', './js/ledger.js', './js/budget.js', './js/backup.js',
+  './js/utils.js', './js/storage.js', './js/loan.js', './js/ledger.js', './js/budget.js', './js/backup.js', './js/cash.js', './js/seed.js',
   './js/views/loan-view.js', './js/views/ledger-view.js', './js/views/budget-view.js', './js/views/dashboard-view.js',
   './js/app.js', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png',
 ];

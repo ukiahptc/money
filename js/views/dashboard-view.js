@@ -3,6 +3,68 @@ const DashboardView = (() => {
   const { el, won, man, comma, ymLabel, ymShort, duration } = U;
   let root = null;
 
+  /* ---------- 현금 흐름 ---------- */
+
+  function moneyPrompt(label, current, onOk) {
+    const v = prompt(label, current ? comma(current) : '');
+    if (v == null) return;
+    const n = Math.floor(U.parseNum(v));
+    if (n >= 0) onOk(n);
+  }
+
+  function cashCard(nowYm) {
+    const c = Cash.summary(nowYm);
+    const line = (label, amount, sub, cls) =>
+      el('div', { class: 'calc-line ' + (cls || '') }, [
+        el('span', {}, [label, sub ? el('small', { class: 'muted' }, ` ${sub}`) : null]),
+        el('strong', { class: 'num' }, amount),
+      ]);
+
+    if (!c.hasCash) {
+      return el('section', { class: 'card' }, [
+        el('h3', {}, '현금 흐름'),
+        el('p', { class: 'muted small' }, '통장에 있는 돈을 입력하면 카드값·월급을 반영해 실제로 쓸 수 있는 돈을 계산합니다.'),
+        el('button', { type: 'button', class: 'btn small', onclick: () => moneyPrompt('현재 보유 금액 (원)', 0, (n) => { Cash.setCash(n); render(root); }) }, '보유 금액 입력'),
+      ]);
+    }
+
+    const billRows = c.unpaid.map((b) =>
+      el('div', { class: 'calc-line bill' }, [
+        el('span', {}, [
+          `− ${ymLabel(b.ym).replace(/^\d{4}년 /, '')} 카드 사용분`,
+          el('small', { class: 'muted' }, b.ym === nowYm ? ' (지금까지)' : ` (${ymLabel(b.payYm).replace(/^\d{4}년 /, '')} 결제)`),
+        ]),
+        el('span', { class: 'bill-right' }, [
+          el('strong', { class: 'num' }, won(b.amount)),
+          b.ym === nowYm ? null : el('button', {
+            type: 'button', class: 'link-btn tiny',
+            onclick: () => { if (confirm(`${ymLabel(b.ym)} 카드값 ${won(b.amount)}을 오늘 결제한 것으로 표시할까요?\n보유 금액에서 그만큼 빠집니다.`)) { Cash.markPaid(b.ym, true); render(root); } },
+          }, '결제 완료'),
+        ]),
+      ])
+    );
+    const paid = Cash.bills().filter((b) => b.paidOn).slice(-1)[0];
+
+    return el('section', { class: 'card' }, [
+      el('div', { class: 'card-title' }, [
+        el('h3', {}, '현금 흐름'),
+        el('button', { type: 'button', class: 'link-btn', onclick: () => moneyPrompt('현재 보유 금액 (원)\n통장 잔액을 확인한 값을 넣으세요.', Store.state.cash.amount, (n) => { Cash.setCash(n); render(root); }) }, '보유 금액 수정'),
+      ]),
+      line('지금 가진 돈', won(c.current), c.asOf === Ledger.today() ? '오늘 기준' : `${c.asOf.slice(5).replace('-', '/')} 입력 후 가계부 반영`),
+      ...billRows,
+      c.incomeToCome
+        ? line('+ 들어올 월급', won(c.incomeToCome), '예정', 'plus')
+        : c.incomeSoFar ? line('이번 달 수입', won(c.incomeSoFar), '반영됨', 'muted-line') : null,
+      line('= 실제 쓸 수 있는 돈', won(c.available), null, 'total' + (c.available < 0 ? ' neg' : '')),
+      el('div', { class: 'cash-actions' }, [
+        el('button', { type: 'button', class: 'link-btn tiny', onclick: () => moneyPrompt('매달 들어올 예정 금액 (원)', Store.state.planned.income, (n) => { Cash.setPlannedIncome(n); render(root); }) },
+          `월급 예정액 ${Store.state.planned.income ? won(Store.state.planned.income) : '설정'}`),
+        paid ? el('button', { type: 'button', class: 'link-btn tiny', onclick: () => { Cash.markPaid(paid.ym, false); render(root); } }, `${ymLabel(paid.ym)} 결제 취소`) : null,
+      ]),
+      el('p', { class: 'muted small', style: 'margin:8px 0 0' }, '카드값은 가계부에서 "신용카드"로 기록한 지출을 달별로 합친 값입니다. 결제일에 "결제 완료"를 누르면 보유 금액에서 빠집니다.'),
+    ]);
+  }
+
   /* ---------- 대출 현황 ---------- */
 
   // 상환월이 지난 만큼 스케줄을 진행시켜 현재 잔액과 남은 기간을 구한다
@@ -176,6 +238,7 @@ const DashboardView = (() => {
     const nowYm = Ledger.thisMonth();
     root.replaceChildren(...[
       el('header', { class: 'page-head' }, [el('h1', {}, '대시보드')]),
+      cashCard(nowYm),
       loanCard(nowYm),
       monthCard(nowYm),
       trendCard(nowYm),

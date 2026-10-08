@@ -2,7 +2,8 @@
 const Store = (() => {
   const KEY = 'money.v1';
   const defaults = () => ({
-    version: 1, loans: [], entries: [], budgets: {}, categories: null, ui: { tab: 'loan' },
+    version: 1, loans: [], entries: [], budgets: {}, categories: null,
+    cash: null, cardBills: {}, planned: { income: 0 }, ui: { tab: 'loan' },
   });
   let state = defaults();
 
@@ -23,6 +24,8 @@ const Store = (() => {
       state.categories = JSON.parse(JSON.stringify(Ledger.DEFAULT_CATEGORIES));
     }
     if (!state.budgets) state.budgets = {};
+    if (!state.cardBills) state.cardBills = {};
+    if (!state.planned) state.planned = { income: 0 };
     if (!state.ui) state.ui = { tab: 'loan' };
   }
 

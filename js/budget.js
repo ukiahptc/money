@@ -47,11 +47,13 @@ const Budget = (() => {
     return { rows, totalBudget, totalSpent, totalLeft: totalBudget - totalSpent, unplanned };
   }
 
-  // 이번 달 예상 수입: 기록된 수입이 있으면 그것, 없으면 최근 3개월 중 가장 최근 수입 달
+  // 이번 달 예상 수입: 기록된 수입 → 예정 수입(월급) → 최근 3개월 중 가장 최근 수입 달
   function expectedIncome(ym) {
     const inc = (m) => Ledger.totals(Ledger.ofMonth(Store.state.entries, m)).income;
     const now = inc(ym);
     if (now > 0) return { amount: now, from: ym };
+    const planned = Store.state.planned?.income || 0;
+    if (planned > 0) return { amount: planned, from: 'planned' };
     for (let k = 1; k <= 3; k++) {
       const m = Ledger.shiftMonth(ym, -k);
       const v = inc(m);

@@ -131,7 +131,7 @@ const BudgetView = (() => {
     if (!s.income.amount) {
       body.push(el('p', { class: 'muted small' }, '가계부에 수입을 기록하면 예산을 뺀 나머지를 추가 상환액으로 제안합니다.'));
     } else {
-      const from = s.income.from === month ? '이번 달 수입' : `${ymLabel(s.income.from)} 수입 기준`;
+      const from = s.income.from === month ? '이번 달 수입' : s.income.from === 'planned' ? '예정 수입(월급)' : `${ymLabel(s.income.from)} 수입 기준`;
       body.push(
         el('div', { class: 'calc-line' }, [
           el('span', {}, from), el('strong', { class: 'num' }, won(s.income.amount)),
