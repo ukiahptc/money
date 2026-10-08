@@ -20,8 +20,10 @@
   }
 
   Store.load();
-  if (!Store.state.loans.length && !Store.state.entries.length) {
-    Seed.apply(Store.state);
+  const firstRun = !Store.state.loans.length && !Store.state.entries.length && !Store.state.cash;
+  if (firstRun) {
+    Store.state.loans.push(...LoanView.seedLoans());
+    Store.state.ui.tab = 'dashboard';
     Store.save();
   }
   // 오프라인·홈 화면 앱용 (file:// 로 열면 지원 안 됨)
@@ -30,4 +32,5 @@
   }
   tabs.forEach((t) => t.addEventListener('click', () => show(t.dataset.tab)));
   show(Store.state.ui.tab);
+  if (firstRun && !Store.state.ui.setupDone) SetupView.open(() => show('dashboard'));
 })();

@@ -24,7 +24,7 @@ const DashboardView = (() => {
       return el('section', { class: 'card' }, [
         el('h3', {}, '현금 흐름'),
         el('p', { class: 'muted small' }, '통장에 있는 돈을 입력하면 카드값·월급을 반영해 실제로 쓸 수 있는 돈을 계산합니다.'),
-        el('button', { type: 'button', class: 'btn small', onclick: () => moneyPrompt('현재 보유 금액 (원)', 0, (n) => { Cash.setCash(n); render(root); }) }, '보유 금액 입력'),
+        el('button', { type: 'button', class: 'btn small', onclick: () => SetupView.open(() => render(root)) }, '시작 설정 열기'),
       ]);
     }
 
