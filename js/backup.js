@@ -1,7 +1,7 @@
 /* 섹션 5: 백업·복원 (JSON 전체, CSV 가계부) */
 const Backup = (() => {
-  function download(filename, text, mime) {
-    const blob = new Blob(['﻿' + text], { type: mime + ';charset=utf-8' }); // BOM: 엑셀 한글 깨짐 방지
+  function download(filename, text, mime, bom = false) {
+    const blob = new Blob([(bom ? '\uFEFF' : '') + text], { type: mime + ';charset=utf-8' }); // BOM: 엑셀 한글 깨짐 방지(CSV만)
     const url = URL.createObjectURL(blob);
     const a = U.el('a', { href: url, download: filename });
     document.body.append(a);
@@ -28,7 +28,7 @@ const Backup = (() => {
     for (const e of sorted) {
       rows.push([e.date, Ledger.TYPES[e.type], Ledger.catLabel(e.type, e.category), e.amount, e.memo || '']);
     }
-    download(`money-ledger-${stamp()}.csv`, rows.map((r) => r.map(csvCell).join(',')).join('\n'), 'text/csv');
+    download(`money-ledger-${stamp()}.csv`, rows.map((r) => r.map(csvCell).join(',')).join('\n'), 'text/csv', true);
   }
 
   // 파일 선택 → 내용 검사 → 교체. onDone(요약 문자열)
@@ -38,7 +38,7 @@ const Backup = (() => {
       const file = input.files[0];
       if (!file) return;
       try {
-        const data = JSON.parse(await file.text());
+        const data = JSON.parse((await file.text()).replace(/^\uFEFF/, '')); // 옛 백업의 BOM 제거
         if (!Array.isArray(data.loans) || !Array.isArray(data.entries)) throw new Error('형식');
         const cur = Store.state;
         const msg =
