@@ -18,7 +18,9 @@ const LoanView = (() => {
 
   // 첫 실행 기본 카드. 금액·금리는 앱에서 직접 입력한다
   function seedLoans() {
-    return [newLoan('신용 대출'), newLoan('비상금 대출')];
+    // 비상금 대출은 보통 쓴 만큼 이자만 내고 만기에 갚는 구조라 만기일시를 기본으로
+    const bullet = (name) => ({ ...newLoan(name), method: 'bullet' });
+    return [newLoan('신용 대출'), bullet('케이뱅크 비상금 대출'), bullet('토스뱅크 비상금 대출')];
   }
 
   /* ---------- 입력 컴포넌트 ---------- */
