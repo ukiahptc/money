@@ -84,6 +84,8 @@ const Cash = (() => {
     const cur = now();
     const unpaid = unpaidBills();
     const unpaidTotal = unpaid.reduce((s, b) => s + b.amount, 0);
+    // 이번 달에 아직 안 빠진 고정 지출: 카드는 다음 달 카드값, 현금은 바로 차감 예정
+    const up = typeof Recurring !== 'undefined' ? Recurring.upcoming(nowYm) : { card: [], cash: [], cardTotal: 0, cashTotal: 0 };
     const monthEntries = Ledger.ofMonth(st().entries, nowYm);
     const incomeSoFar = Ledger.totals(monthEntries).income;
     const planned = st().planned?.income || 0;
@@ -105,7 +107,8 @@ const Cash = (() => {
     return {
       hasCash: !!c, asOf: c?.asOf || null, current: cur,
       unpaid, unpaidTotal, incomeToCome, incomeSoFar, loanDue, loanPaid, loanLeft, paydayPassed: paydayPassed && !salaryIn,
-      available: cur == null ? null : cur - unpaidTotal - loanLeft + incomeToCome,
+      upcomingCard: up.card, upcomingCardTotal: up.cardTotal, upcomingCash: up.cash, upcomingCashTotal: up.cashTotal,
+      available: cur == null ? null : cur - unpaidTotal - up.cardTotal - up.cashTotal - loanLeft + incomeToCome,
     };
   }
 

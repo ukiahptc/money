@@ -151,7 +151,7 @@ const LedgerView = (() => {
     const sign = e.type === 'income' ? '+' : '-';
     return el('li', {}, el('button', { type: 'button', class: 'entry', onclick: () => openSheet(e) }, [
       el('span', { class: 'entry-cat' + (e.type === 'income' ? ' income' : '') }, Ledger.catLabel(e.type, e.category)),
-      el('span', { class: 'entry-memo' }, [e.memo || '', e.type === 'expense' && e.pay === 'cash' ? el('small', { class: 'pay-badge' }, '현금') : null]),
+      el('span', { class: 'entry-memo' }, [e.memo || '', e.type === 'expense' && e.pay === 'cash' ? el('small', { class: 'pay-badge' }, '현금') : null, e.recurringId ? el('small', { class: 'pay-badge' }, '고정') : null]),
       el('span', { class: 'entry-amt num' + (e.type === 'income' ? ' income' : '') }, sign + comma(e.amount)),
     ]));
   }

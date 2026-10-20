@@ -175,6 +175,103 @@ const BudgetView = (() => {
     return el('section', { class: 'card' }, [el('h3', {}, '남는 돈 → 대출 상환'), ...body]);
   }
 
+  /* ---------- 고정 지출 ---------- */
+
+  function openRecurringSheet(r, onDone) {
+    const isNew = !r;
+    const d = r ? { ...r } : { id: U.uid(), name: '', amount: 0, day: 1, category: 'subscribe', pay: 'card', startYm: Ledger.shiftMonth(Ledger.thisMonth(), 1), endYm: null, active: true };
+    let dlg;
+    const err = el('p', { class: 'form-error', role: 'alert' });
+    const nameInp = el('input', { type: 'text', class: 'input', placeholder: '예: Claude Max', value: d.name, maxlength: 30 });
+    nameInp.addEventListener('input', () => { d.name = nameInp.value; });
+    const amountInp = el('input', { type: 'text', inputmode: 'numeric', class: 'input num', placeholder: '0', value: d.amount ? comma(d.amount) : '' });
+    amountInp.addEventListener('input', () => { const n = Math.floor(parseNum(amountInp.value)); amountInp.value = n ? comma(n) : ''; d.amount = n; });
+    const dayInp = el('input', { type: 'text', inputmode: 'numeric', class: 'input num', placeholder: '1~31', value: d.day || '' });
+    dayInp.addEventListener('input', () => { d.day = Math.floor(parseNum(dayInp.value)); });
+    const chips = el('div', { class: 'chips' });
+    chips.replaceChildren(...Ledger.cats('expense').map((c) => {
+      const b = el('button', { type: 'button', class: 'chip', 'aria-pressed': String(c.id === d.category) }, c.label);
+      b.addEventListener('click', () => { d.category = c.id; chips.querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); });
+      return b;
+    }));
+    const startInp = el('input', { type: 'month', class: 'input', value: d.startYm });
+    startInp.addEventListener('change', () => { d.startYm = startInp.value; });
+    const endInp = el('input', { type: 'month', class: 'input', value: d.endYm || '' });
+    endInp.addEventListener('change', () => { d.endYm = endInp.value || null; });
+
+    function saveIt() {
+      if (!d.name.trim()) { err.textContent = '이름을 입력해 주세요.'; return; }
+      if (!(d.amount > 0)) { err.textContent = '금액을 입력해 주세요.'; return; }
+      if (!(d.day >= 1 && d.day <= 31)) { err.textContent = '결제일은 1~31 사이여야 합니다.'; return; }
+      if (!/^\d{4}-\d{2}$/.test(d.startYm || '')) { err.textContent = '시작월을 선택해 주세요.'; return; }
+      if (d.endYm && d.endYm < d.startYm) { err.textContent = '종료월이 시작월보다 빠릅니다.'; return; }
+      Recurring.save(d);
+      const n = Recurring.postDue();
+      dlg.close(); onDone(n);
+    }
+    dlg = U.sheet('고정 지출', () =>
+      el('form', { class: 'sheet-body', onsubmit: (e) => { e.preventDefault(); saveIt(); } }, [
+        el('div', { class: 'sheet-head' }, [
+          el('button', { type: 'button', class: 'link-btn', onclick: () => dlg.close() }, '취소'),
+          el('strong', {}, isNew ? '고정 지출 추가' : '고정 지출 수정'),
+          el('button', { type: 'submit', class: 'link-btn strong' }, '저장'),
+        ]),
+        el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '이름'), nameInp]),
+        el('div', { class: 'grid2' }, [
+          el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '월 금액 (원)'), amountInp]),
+          el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '결제일 (매달 며칠)'), dayInp]),
+        ]),
+        el('div', { class: 'field' }, [el('span', { class: 'field-label' }, '카테고리'), chips]),
+        el('div', { class: 'field' }, [
+          el('span', { class: 'field-label' }, '결제 수단'),
+          U.segmented({ card: '신용카드', cash: '현금·체크(자동이체)' }, d.pay, (k) => { d.pay = k; }),
+        ]),
+        el('div', { class: 'grid2' }, [
+          el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '시작월'), startInp, el('span', { class: 'field-hint' }, '이 달부터 자동 기록. 이미 손으로 적은 달은 그 다음 달로')]),
+          el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '종료월 (해지 예정이면)'), endInp, el('span', { class: 'field-hint' }, '비우면 계속')]),
+        ]),
+        err,
+        isNew ? null : el('div', { class: 'grid2' }, [
+          el('button', { type: 'button', class: 'btn ghost small', style: 'margin:0', onclick: () => { d.active = d.active === false; Recurring.save(d); dlg.close(); onDone(0); } }, d.active === false ? '다시 켜기' : '일시 중지'),
+          el('button', { type: 'button', class: 'btn danger-ghost small', style: 'margin:0', onclick: () => {
+            const keep = confirm('이미 가계부에 기록된 내역은 남길까요?\n확인 = 남김, 취소 = 같이 삭제');
+            Recurring.remove(d.id, !keep); dlg.close(); onDone(0);
+          } }, '삭제'),
+        ]),
+      ])
+    );
+    if (isNew) nameInp.focus();
+  }
+
+  function recurringCard() {
+    const items = Recurring.list();
+    const ym = month;
+    const total = Recurring.monthlyTotal(ym);
+    const rows = items.map((r) => {
+      const active = Recurring.activeIn(r, ym);
+      return el('button', { type: 'button', class: 'stock-row' + (active ? '' : ' muted'), onclick: () => openRecurringSheet(r, (n) => { if (n) alert(`${n}건을 가계부에 기록했습니다.`); render(root, true); }) }, [
+        el('div', { class: 'stock-top' }, [
+          el('span', { class: 'stock-name' }, [r.name, el('small', {}, ` 매달 ${r.day}일 · ${r.pay === 'cash' ? '자동이체' : '카드'}`)]),
+          el('strong', { class: 'num' }, won(r.amount)),
+        ]),
+        el('div', { class: 'stock-sub small muted' }, [
+          el('span', {}, `${Ledger.catLabel('expense', r.category)} · ${r.startYm.replace('-', '.')}부터${r.endYm ? ' ' + r.endYm.replace('-', '.') + '까지' : ''}`),
+          el('span', {}, r.active === false ? '일시 중지' : active ? '' : '이 달 해당 없음'),
+        ]),
+      ]);
+    });
+    return el('section', { class: 'card' }, [
+      el('div', { class: 'card-title' }, [
+        el('h3', {}, '고정 지출'),
+        el('button', { type: 'button', class: 'link-btn', onclick: () => openRecurringSheet(null, (n) => { if (n) alert(`${n}건을 가계부에 기록했습니다.`); render(root, true); }) }, '+ 추가'),
+      ]),
+      el('p', { class: 'muted small', style: 'margin:0 0 8px' }, items.length
+        ? `${ymLabel(ym)} 고정 지출 합계 ${won(total)}. 결제일이 되면 가계부에 자동으로 기록되고, 그 전에는 현금 흐름 예측에 미리 잡힙니다.`
+        : '구독·통신·보험료·대출 자동이체처럼 매달 같은 날 빠지는 지출을 등록하면 매달 손으로 안 적어도 됩니다.'),
+      rows.length ? el('div', {}, rows) : null,
+    ]);
+  }
+
   /* ---------- 렌더 ---------- */
 
   let rendering = false;
@@ -198,6 +295,7 @@ const BudgetView = (() => {
         onclick: () => { Budget.copyFrom(prev, month); render(root); },
       }, `${ymLabel(prev)} 예산 복사해 오기`) : null,
       suggestionCard(),
+      recurringCard(),
       el('section', { class: 'card' }, [
         el('div', { class: 'card-title' }, [
           el('h3', {}, '카테고리별 예산'),

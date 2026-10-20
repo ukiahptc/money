@@ -1,5 +1,5 @@
 /* 앱 진입점: 탭 전환, 서비스 워커 */
-const APP_VERSION = 'v17'; // sw.js의 CACHE 버전과 맞춘다
+const APP_VERSION = 'v18'; // sw.js의 CACHE 버전과 맞춘다
 (() => {
   const VIEWS = {
     dashboard: DashboardView,
@@ -22,6 +22,7 @@ const APP_VERSION = 'v17'; // sw.js의 CACHE 버전과 맞춘다
   }
 
   Store.load();
+  Recurring.postDue(); // 날짜 지난 고정 지출을 가계부에 기록
   const firstRun = !Store.state.loans.length && !Store.state.entries.length && !Store.state.cash;
   if (firstRun) {
     Store.state.loans.push(...LoanView.seedLoans());

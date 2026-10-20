@@ -52,6 +52,8 @@ const DashboardView = (() => {
       ]),
       line('지금 가진 돈', won(c.current), c.asOf === Ledger.today() ? '오늘 기준' : `${c.asOf.slice(5).replace('-', '/')} 입력 후 가계부 반영`),
       ...billRows,
+      c.upcomingCardTotal ? line('− 이번 달 남은 고정 카드 결제', won(c.upcomingCardTotal), c.upcomingCard.map((u) => `${u.name} ${u.date.slice(8)}일`).join(', '), 'bill') : null,
+      c.upcomingCashTotal ? line('− 이번 달 남은 고정 현금 지출', won(c.upcomingCashTotal), c.upcomingCash.map((u) => `${u.name} ${u.date.slice(8)}일`).join(', '), 'bill') : null,
       c.loanDue
         ? line('− 이번 달 대출 납입', won(c.loanLeft), c.loanPaid ? `${won(c.loanDue)} 중 ${won(c.loanPaid)} 냄` : `${Store.state.loans.filter(Loan.isValid).length}건 합계`, 'bill')
         : null,
