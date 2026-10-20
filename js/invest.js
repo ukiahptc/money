@@ -42,8 +42,13 @@ const Invest = (() => {
     const invFree = invs.reduce((s, x) => s + x.free, 0);
     const invLocked = invs.reduce((s, x) => s + x.locked, 0);
     const principal = invs.reduce((s, x) => s + (x.inv.principal || 0), 0);
+    const stocks = typeof Stocks !== 'undefined' ? Stocks.total() : { value: 0, cost: 0 };
     const debt = st().loans.filter(Loan.isValid).reduce((s, l) => s + DashboardView.loanProgress(l, nowYm).current, 0);
-    return { cash, invFree, invLocked, principal, profit: invFree - principal, debt, net: cash + invFree - debt, items: invs };
+    return {
+      cash, invFree, invLocked, principal, profit: invFree - principal,
+      stocks: stocks.value, stocksCost: stocks.cost, stocksProfit: stocks.value - stocks.cost,
+      debt, net: cash + invFree + stocks.value - debt, items: invs,
+    };
   }
 
   return { list, valueOf, save, remove, netWorth };

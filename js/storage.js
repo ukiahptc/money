@@ -3,7 +3,7 @@ const Store = (() => {
   const KEY = 'money.v1';
   const defaults = () => ({
     version: 1, loans: [], entries: [], budgets: {}, categories: null,
-    cash: null, cardBills: {}, planned: { income: 0 }, investments: [], ui: { tab: 'loan' },
+    cash: null, cardBills: {}, planned: { income: 0 }, investments: [], stocks: [], settings: { proxyUrl: '' }, ui: { tab: 'loan' },
   });
   let state = defaults();
 
@@ -36,6 +36,8 @@ const Store = (() => {
     if (!state.cardBills) state.cardBills = {};
     if (!state.planned) state.planned = { income: 0 };
     if (!state.investments) state.investments = [];
+    if (!state.stocks) state.stocks = [];
+    if (!state.settings) state.settings = { proxyUrl: '' };
     if (!state.ui) state.ui = { tab: 'loan' };
   }
 

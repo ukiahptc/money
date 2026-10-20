@@ -328,10 +328,23 @@ input[type="month"].input { min-height: 44px; }
 .inv-sub { margin-top: 2px; }
 .inv-sub .neg { color: var(--danger); }
 
+/* ---------- 자산 탭 ---------- */
+.stock-row { display: block; width: 100%; text-align: left; font: inherit; color: var(--text); background: none; border: 0; border-bottom: 1px solid var(--line); padding: 10px 0; cursor: pointer; }
+.stock-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.stock-name { font-weight: 600; }
+.stock-name small { font-weight: 400; color: var(--muted); margin-left: 4px; }
+.stock-sub { display: flex; justify-content: space-between; gap: 8px; margin-top: 2px; }
+.up { color: var(--danger); }
+.down { color: #0a62d0; }
+@media (prefers-color-scheme: dark) { .down { color: #5ea4ff; } }
+.refresh-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.refresh-note { font-size: 12px; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn.small.busy { opacity: 0.6; pointer-events: none; }
+
 /* ---------- 하단 탭바 ---------- */
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(5, 1fr);
   height: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
   background: color-mix(in srgb, var(--card) 88%, transparent);
@@ -345,6 +358,7 @@ input[type="month"].input { min-height: 44px; }
   background: none; border: 0; cursor: pointer;
 }
 .tab svg { width: 24px; height: 24px; fill: currentColor; }
+.tab span { white-space: nowrap; }
 .tab[aria-current="page"] { color: var(--accent); }
 
 @media (max-width: 360px) {

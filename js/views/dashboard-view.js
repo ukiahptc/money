@@ -217,95 +217,21 @@ const DashboardView = (() => {
     ]);
   }
 
-  /* ---------- 투자 자산 · 순자산 ---------- */
-
-  function openInvestSheet(inv, onDone) {
-    const isNew = !inv;
-    const d = inv ? { ...inv } : { id: U.uid(), name: '', unit: 'USDT', amount: 0, locked: 0, rate: 0, principal: 0 };
-    let dlg;
-    const err = el('p', { class: 'form-error', role: 'alert' });
-    const numInp = (key, ph, decimal) => {
-      const i = el('input', { type: 'text', inputmode: decimal ? 'decimal' : 'numeric', class: 'input num', placeholder: ph, value: d[key] ? (decimal ? d[key] : comma(d[key])) : '' });
-      i.addEventListener('input', () => {
-        const raw = i.value.replace(/[^\d.]/g, '');
-        const n = decimal ? parseFloat(raw) : Math.floor(Number(raw));
-        d[key] = Number.isFinite(n) ? n : 0;
-        if (!decimal) i.value = d[key] ? comma(d[key]) : '';
-      });
-      return i;
-    };
-    const nameInp = el('input', { type: 'text', class: 'input', placeholder: '예: 거래소 선물 계정', value: d.name, maxlength: 20 });
-    nameInp.addEventListener('input', () => { d.name = nameInp.value; });
-    const amountInp = numInp('amount', '0', true), lockedInp = numInp('locked', '0', true);
-    const rateInp = numInp('rate', '예: 1,350'), principalInp = numInp('principal', '내가 넣은 원화');
-    const unitFields = el('div', { class: 'grid2' }, [
-      el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '보유 수량'), amountInp]),
-      el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '그중 출금 불가 (증정금 등)'), lockedInp]),
-    ]);
-    const rateField = el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '단가 (원, 거래소 원화 시세)'), rateInp, el('span', { class: 'field-hint' }, '평가액 = 수량 × 단가. 시세가 바뀌면 여기만 고치면 됩니다.')]);
-    const syncUnit = () => { rateField.hidden = d.unit === 'KRW'; unitFields.querySelectorAll('.field-label')[0].textContent = d.unit === 'KRW' ? '평가액 (원)' : '보유 수량 (USDT)'; };
-    const unitSeg = U.segmented({ USDT: 'USDT', KRW: '원화' }, d.unit, (k) => { d.unit = k; syncUnit(); });
-    syncUnit();
-
-    function saveIt() {
-      if (!d.name.trim()) { err.textContent = '이름을 입력해 주세요.'; return; }
-      if (!(d.amount > 0)) { err.textContent = '수량을 입력해 주세요.'; return; }
-      if (d.unit !== 'KRW' && !(d.rate > 0)) { err.textContent = '단가를 입력해 주세요.'; return; }
-      if (d.locked > d.amount) { err.textContent = '출금 불가 수량이 보유 수량보다 큽니다.'; return; }
-      Invest.save(d); dlg.close(); onDone();
-    }
-    dlg = U.sheet('투자 자산', () =>
-      el('form', { class: 'sheet-body', onsubmit: (e) => { e.preventDefault(); saveIt(); } }, [
-        el('div', { class: 'sheet-head' }, [
-          el('button', { type: 'button', class: 'link-btn', onclick: () => dlg.close() }, '취소'),
-          el('strong', {}, isNew ? '투자 자산 추가' : '평가액 갱신'),
-          el('button', { type: 'submit', class: 'link-btn strong' }, '저장'),
-        ]),
-        el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '이름'), nameInp]),
-        el('div', { class: 'field' }, [el('span', { class: 'field-label' }, '단위'), unitSeg]),
-        unitFields,
-        rateField,
-        el('label', { class: 'field' }, [el('span', { class: 'field-label' }, '투자 원금 (원)'), principalInp, el('span', { class: 'field-hint' }, '실제로 넣은 내 돈. 손익은 출금 가능 평가액 − 원금으로 계산합니다.')]),
-        err,
-        isNew ? null : el('button', { type: 'button', class: 'btn danger-ghost block-btn', onclick: () => { if (confirm('이 투자 자산을 삭제할까요?')) { Invest.remove(d.id); dlg.close(); onDone(); } } }, '삭제'),
-      ])
-    );
-  }
+  /* ---------- 순자산 (요약, 자세한 건 자산 탭) ---------- */
 
   function investCard(nowYm) {
     const n = Invest.netWorth(nowYm);
-    const refresh = () => render(root);
     const sign = (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + won(Math.abs(v));
-    const rows = n.items.map(({ inv, total, locked, free, profit }) => {
-      const prev = (inv.history || []).slice(-2)[0];
-      const delta = prev && inv.history.length > 1 ? free - prev.value : null;
-      return el('button', { type: 'button', class: 'inv-row', onclick: () => openInvestSheet(inv, refresh) }, [
-        el('div', { class: 'inv-top' }, [
-          el('span', { class: 'inv-name' }, inv.name),
-          el('strong', { class: 'num' }, won(free)),
-        ]),
-        el('div', { class: 'inv-sub muted small' }, [
-          inv.unit === 'KRW' ? null : `${inv.amount.toLocaleString('ko-KR')} ${inv.unit} × ${comma(inv.rate)}원`,
-          locked ? ` · 출금 불가 ${won(locked)} 제외` : null,
-        ]),
-        el('div', { class: 'inv-sub small' }, [
-          el('span', { class: profit >= 0 ? 'income' : 'neg' }, `원금 대비 ${sign(profit)}`),
-          delta != null ? el('span', { class: 'muted' }, ` · 지난 기록 대비 ${sign(delta)}`) : null,
-          el('span', { class: 'muted' }, ` · ${new Date(inv.updatedAt).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })} 갱신`),
-        ]),
-      ]);
-    });
+    const go = () => document.querySelector('.tab[data-tab="assets"]').click();
+    const line = (label, v, cls) => el('div', { class: 'calc-line ' + (cls || '') }, [el('span', {}, label), el('strong', { class: 'num' }, v)]);
     return el('section', { class: 'card' }, [
-      el('div', { class: 'card-title' }, [
-        el('h3', {}, '순자산'),
-        el('button', { type: 'button', class: 'link-btn', onclick: () => openInvestSheet(null, refresh) }, '+ 투자 자산'),
-      ]),
-      el('div', { class: 'calc-line' }, [el('span', {}, '현금'), el('strong', { class: 'num' }, won(n.cash))]),
-      el('div', { class: 'calc-line' }, [el('span', {}, ['+ 투자 (출금 가능분)', n.invLocked ? el('small', { class: 'muted' }, ` 증정금 ${won(n.invLocked)} 제외`) : null]), el('strong', { class: 'num' }, won(n.invFree))]),
-      el('div', { class: 'calc-line' }, [el('span', {}, '− 대출 잔액'), el('strong', { class: 'num' }, won(n.debt))]),
-      el('div', { class: 'calc-line total' + (n.net < 0 ? ' neg' : '') }, [el('span', {}, '= 순자산'), el('strong', { class: 'num' }, sign(n.net))]),
-      rows.length ? el('div', { class: 'inv-list' }, rows) : el('p', { class: 'muted small', style: 'margin:10px 0 0' }, '거래소·계좌 평가액을 넣으면 빚을 뺀 순자산과 투자 손익을 따로 보여줍니다. 수익이 나도 빚 계획은 바뀌지 않습니다.'),
-      rows.length ? el('p', { class: 'muted small', style: 'margin:8px 0 0' }, '항목을 누르면 평가액을 갱신합니다. 순자산에는 출금 가능한 금액만 넣습니다.') : null,
+      el('div', { class: 'card-title' }, [el('h3', {}, '순자산'), el('button', { type: 'button', class: 'link-btn', onclick: go }, '자산 탭 ›')]),
+      line('현금', won(n.cash)),
+      line('+ 주식', won(n.stocks)),
+      line('+ 코인·거래소 (출금 가능분)', won(n.invFree)),
+      line('− 대출 잔액', won(n.debt)),
+      line('= 순자산', sign(n.net), 'total' + (n.net < 0 ? ' neg' : '')),
+      !n.stocks && !n.invFree ? el('p', { class: 'muted small', style: 'margin:10px 0 0' }, '자산 탭에서 주식·거래소 평가액을 넣으면 여기에 합산됩니다.') : null,
     ]);
   }
 
@@ -314,7 +240,7 @@ const DashboardView = (() => {
   function dataCard() {
     const s = Store.state;
     const status = el('p', { class: 'muted small', style: 'margin:8px 0 0' },
-      `대출 ${s.loans.length}건 · 가계부 ${s.entries.length}건 · 이 기기 브라우저에만 저장됨`);
+      `대출 ${s.loans.length}건 · 가계부 ${s.entries.length}건 · 이 기기 브라우저에만 저장됨 · 앱 ${APP_VERSION}`);
     const btn = (label, fn, cls = 'ghost') => el('button', { type: 'button', class: `btn ${cls} block-btn`, style: 'margin-bottom:8px', onclick: fn }, label);
     return el('section', { class: 'card' }, [
       el('h3', {}, '데이터 백업'),
