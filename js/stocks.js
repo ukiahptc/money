@@ -66,10 +66,22 @@ const Stocks = (() => {
     throw lastErr || new Error('시세 조회 실패');
   }
 
-  // 업비트 USDT 원화 시세 (CORS 허용이라 직접 호출)
+  // 업비트 USDT 원화 시세. CORS는 열려 있지만 Safari 등에서 직접 호출이 막히는 경우가 있어
+  // 실패하면 프록시(내 프록시 → 공개 프록시)로 다시 시도한다
+  const UPBIT = 'https://api.upbit.com/v1/ticker?markets=KRW-USDT';
   async function usdtKrw() {
-    const j = await fetchJson('https://api.upbit.com/v1/ticker?markets=KRW-USDT');
-    return Number(j?.[0]?.trade_price) || null;
+    let lastErr = null;
+    for (const url of [UPBIT, ...proxyChain(UPBIT)]) {
+      try {
+        const j = await fetchJson(url);
+        const price = Number(j?.[0]?.trade_price);
+        if (price > 0) return price;
+        throw new Error('형식');
+      } catch (e) {
+        lastErr = e;
+      }
+    }
+    throw lastErr || new Error('USDT 시세 조회 실패');
   }
 
   function save(s) {
