@@ -10,13 +10,17 @@ const Plan = (() => {
   const st = () => Store.state;
   const settings = () => st().plan || (st().plan = { monthly: 0, buffer: 300000, order: 'auto', maturityFrom: 'cash' });
 
-  // 월급 예정액 − (이번 달 예산 합계 − 대출 상환 예산). 예산이 없으면 월급의 절반
+  // 월급 예정액 − 생활 예산(대출 상환 제외) − 예산에 없는 카테고리의 고정 지출. 예산이 없으면 월급의 절반
+  // 기준 달은 다음 달: 이번 달 예산은 기초 데이터 때문에 부풀어 있을 수 있고, 계획은 앞으로를 보는 것이므로
   function defaultMonthly() {
-    const ym = Ledger.thisMonth();
+    const ym = Ledger.shiftMonth(Ledger.thisMonth(), 1);
     const income = st().planned?.income || 0;
-    const b = st().budgets[ym] || {};
+    const b = st().budgets[ym] || st().budgets[Ledger.thisMonth()] || {};
     const living = Object.entries(b).filter(([k]) => k !== 'loan').reduce((s, [, v]) => s + v, 0);
-    return Math.max(0, income - (living || Math.round(income / 2)));
+    const fixedOutsideBudget = typeof Recurring !== 'undefined'
+      ? Recurring.list().filter((r) => Recurring.activeIn(r, ym) && r.category !== 'loan' && !(b[r.category] > 0)).reduce((s, r) => s + r.amount, 0)
+      : 0;
+    return Math.max(0, income - (living || Math.round(income / 2)) - fixedOutsideBudget);
   }
 
   function monthly() {

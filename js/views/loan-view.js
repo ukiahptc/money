@@ -401,7 +401,7 @@ const LoanView = (() => {
       el('details', { class: 'sched-details' }, [
         el('summary', {}, '계획 설정'),
         el('div', { class: 'grid2', style: 'margin-top:10px' }, [
-          field('매달 빚에 넣을 총액 (원)', monthlyInp, el('span', { class: 'field-hint' }, '정규 납입 포함. 비우면 월급 예정액 − 생활 예산')),
+          field('매달 빚에 넣을 총액 (원)', monthlyInp, el('span', { class: 'field-hint' }, '정규 납입 포함. 비우면 월급 예정액 − 다음 달 생활 예산 − 예산에 없는 고정 지출')),
           field('통장에 남길 최소 금액 (원)', bufferInp, el('span', { class: 'field-hint' }, '이번 달 추가 상환은 이 금액을 남기고 계산')),
         ]),
         el('div', { class: 'field' }, [
