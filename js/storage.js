@@ -24,6 +24,15 @@ const Store = (() => {
       state.categories = JSON.parse(JSON.stringify(Ledger.DEFAULT_CATEGORIES));
     }
     if (!state.budgets) state.budgets = {};
+    // 나중에 추가된 기본 카테고리를 기존 데이터에도 한 번 넣어 준다 (사용자가 지우면 다시 안 넣음)
+    if (!state.ui?.addedSideCost) {
+      const exp = state.categories.expense;
+      if (!exp.some((c) => c.id === 'side_cost')) {
+        const i = exp.findIndex((c) => c.id === 'loan');
+        exp.splice(i >= 0 ? i : exp.length - 1, 0, { id: 'side_cost', label: '부업 비용' });
+      }
+      state.ui = { ...(state.ui || {}), addedSideCost: true };
+    }
     if (!state.cardBills) state.cardBills = {};
     if (!state.planned) state.planned = { income: 0 };
     if (!state.ui) state.ui = { tab: 'loan' };

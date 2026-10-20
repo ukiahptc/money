@@ -15,6 +15,7 @@ const Ledger = (() => {
       { id: 'leisure', label: '문화·여가' },
       { id: 'gift', label: '경조사·선물' },
       { id: 'edu', label: '자기계발' },
+      { id: 'side_cost', label: '부업 비용' },
       { id: 'loan', label: '대출 상환' },
       { id: 'etc', label: '기타' },
     ],
