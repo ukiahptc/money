@@ -65,9 +65,11 @@ const Cash = (() => {
     const c = st().cash;
     if (!c) return null;
     const at = snapshotAt(c);
+    const today = Ledger.today();
     let v = c.amount;
     for (const e of st().entries) {
       if ((e.createdAt || 0) <= at) continue;
+      if (e.date > today) continue; // 미리 적어둔 예정 지출(자동이체 등)은 그 날짜가 돼야 빠진다
       if (e.type === 'income') v += e.amount;
       else if ((e.pay || 'card') === 'cash') v -= e.amount;
     }
@@ -96,7 +98,8 @@ const Cash = (() => {
       const row = Loan.schedule(l, l.extra).find((r) => r.ym === nowYm);
       return s + (row ? row.payment : 0);
     }, 0);
-    const loanPaid = monthEntries.filter((e) => e.type === 'expense' && e.category === 'loan').reduce((s, e) => s + e.amount, 0);
+    const todayStr = Ledger.today();
+    const loanPaid = monthEntries.filter((e) => e.type === 'expense' && e.category === 'loan' && e.date <= todayStr).reduce((s, e) => s + e.amount, 0);
     const loanLeft = Math.max(0, loanDue - loanPaid);
     return {
       hasCash: !!c, asOf: c?.asOf || null, current: cur,
