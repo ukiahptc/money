@@ -326,6 +326,84 @@ const LoanView = (() => {
     return { node: box, refresh };
   }
 
+  /* ---------- 상환 계획 카드 ---------- */
+
+  function planCard(onRefresh) {
+    const loans = Store.state.loans.filter(Loan.isValid);
+    const box = el('section', { class: 'card plan-card' });
+    if (!loans.length) return box;
+    const t = Plan.thisMonth();
+    const s = Plan.settings();
+    const name = (id) => loans.find((l) => l.id === id)?.name || '';
+    const sign = (v) => (v > 0 ? '+' : v < 0 ? '−' : '') + won(Math.abs(v));
+
+    // 설정 입력
+    const monthlyInp = moneyInput(s.monthly || 0, (n) => { s.monthly = n; Store.save(); });
+    monthlyInp.placeholder = comma(Plan.defaultMonthly()) + ' (자동)';
+    const bufferInp = moneyInput(s.buffer || 0, (n) => { s.buffer = n; Store.save(); });
+    const commit = () => onRefresh();
+    [monthlyInp, bufferInp].forEach((i) => { i.addEventListener('blur', commit); i.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); i.blur(); } }); });
+
+    // 이번 달
+    const target = t.target;
+    const short = t.affordable != null && t.affordable < t.plannedExtra;
+    const thisMonthBox = el('div', { class: 'plan-now' }, [
+      el('div', { class: 'tiles' }, [
+        tile('이번 달 정규 납입', won(t.first ? t.first.interest + t.first.regular : 0), `${loans.filter((l) => l.startYm <= Ledger.thisMonth()).length}건 자동이체`),
+        tile('계획상 추가 상환', won(t.plannedExtra), target ? `→ ${name(target.id)}` : '없음'),
+        tile('지금 가능한 추가 상환', won(t.extraNow), t.affordable == null ? '보유 금액 미입력' : short ? `실제 쓸 수 있는 돈 ${won(t.cashAvailable)} − 버퍼` : '계획대로 가능', short ? '' : 'good'),
+      ]),
+      target ? el('p', { class: 'callout' + (short ? '' : ' good') }, [
+        `이번 달 추가 상환: `, el('strong', {}, `${name(target.id)} ${won(t.extraNow)}`),
+        short ? ` (계획 ${won(t.plannedExtra)}보다 ${won(t.plannedExtra - t.extraNow)} 적음. 카드값·현금 지출이 늘면 이 금액이 줄어듭니다.)` : '',
+      ]) : null,
+    ]);
+
+    // 월별 표 (실제 이번 달 금액으로 시작하는 시뮬레이션)
+    const rows = t.actual.rows.map((r) =>
+      el('tr', {}, [
+        el('td', {}, ymShort(r.ym)),
+        el('td', {}, comma(r.interest)),
+        el('td', { class: 'plan-extra' }, r.extra.length ? r.extra.map((e) => `${name(e.id)} ${comma(e.amount)}${e.done ? ' ✓' : ''}`).join(' + ') : (r.regular ? '정규만' : '-')),
+        el('td', {}, comma(r.remaining)),
+      ])
+    );
+    const table = el('div', { class: 'table-wrap' }, el('table', { class: 'sched' }, [
+      el('thead', {}, el('tr', {}, ['월', '이자', '추가 상환', '남은 빚'].map((h) => el('th', {}, h)))),
+      el('tbody', {}, rows),
+    ]));
+    const orderLabel = t.order.map((id, i) => `${i + 1}. ${name(id)}`).join(' → ');
+
+    box.append(
+      el('div', { class: 'card-title' }, [el('h3', {}, '상환 계획'), el('span', { class: 'muted small' }, `완납 ${ymLabel(t.actual.endYm)}`)]),
+      el('div', { class: 'tiles' }, [
+        tile('완납 예정', ymLabel(t.actual.endYm), `${duration(t.actual.months)} 남음`, 'good'),
+        tile('총 이자', won(t.actual.totalInterest), `정규만 내면 ${won(t.regularOnly.totalInterest)}`),
+        tile('아끼는 이자', won(t.regularOnly.totalInterest - t.actual.totalInterest), `${duration(Math.max(0, t.regularOnly.months - t.actual.months))} 단축`, 'good'),
+      ]),
+      thisMonthBox,
+      el('p', { class: 'muted small', style: 'margin:10px 0 0' }, `순서: ${orderLabel}`),
+      el('p', { class: 'muted small', style: 'margin:4px 0 0' }, s.order === 'rate' ? '금리 높은 순입니다.' : '금리 높은 순이되, 만기일시 대출은 만기 전에 끝나도록 앞으로 당겼습니다.'),
+      el('details', { class: 'sched-details' }, [
+        el('summary', {}, '월별 계획 보기'),
+        table,
+        el('p', { class: 'muted small' }, '정규 납입(원리금균등·이자)은 자동이체 그대로, 남는 돈을 순서대로 한 대출에 몰아 넣는 계산입니다. 완납한 대출의 자동이체 금액은 다음 순서로 넘어갑니다.'),
+      ]),
+      el('details', { class: 'sched-details' }, [
+        el('summary', {}, '계획 설정'),
+        el('div', { class: 'grid2', style: 'margin-top:10px' }, [
+          field('매달 빚에 넣을 총액 (원)', monthlyInp, el('span', { class: 'field-hint' }, '정규 납입 포함. 비우면 월급 예정액 − 생활 예산')),
+          field('통장에 남길 최소 금액 (원)', bufferInp, el('span', { class: 'field-hint' }, '이번 달 추가 상환은 이 금액을 남기고 계산')),
+        ]),
+        el('div', { class: 'field' }, [
+          el('span', { class: 'field-label' }, '상환 순서'),
+          U.segmented({ auto: '만기 지키며 금리순', rate: '금리순만' }, s.order || 'auto', (k) => { s.order = k; Store.save(); onRefresh(); }),
+        ]),
+      ])
+    );
+    return box;
+  }
+
   /* ---------- 화면 렌더 ---------- */
 
   function render(root) {
@@ -334,7 +412,7 @@ const LoanView = (() => {
     const list = el('div', { class: 'loan-list' });
 
     const handlers = {
-      onChange: summary.refresh,
+      onChange: () => { summary.refresh(); const old = root.querySelector('.plan-card'); if (old) old.replaceWith(planCard(() => render(root))); },
       onDelete: (loan) => {
         state.loans = state.loans.filter((l) => l.id !== loan.id);
         Store.save();
@@ -354,6 +432,7 @@ const LoanView = (() => {
     root.replaceChildren(
       el('header', { class: 'page-head' }, [el('h1', {}, '대출 상환')]),
       summary.node,
+      planCard(() => render(root)),
       list,
       addBtn,
       el('p', { class: 'footnote' }, '월 이자 = 잔액 × 연 금리 ÷ 12로 계산한 예상치입니다. 은행의 일할 계산·중도상환수수료에 따라 실제 금액과 다를 수 있습니다.')

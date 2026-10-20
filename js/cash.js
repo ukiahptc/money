@@ -50,6 +50,11 @@ const Cash = (() => {
     Store.save();
   }
 
+  function setPayday(day) {
+    st().planned = { ...st().planned, payday: Math.min(31, Math.max(0, Math.floor(day))) };
+    Store.save();
+  }
+
   // 스냅샷 시각. 옛 백업처럼 at이 없으면 asOf 날짜의 끝으로 본다
   function snapshotAt(c) {
     return c.at || (Date.parse(c.asOf + 'T23:59:59') || 0);
@@ -81,7 +86,11 @@ const Cash = (() => {
     const planned = st().planned?.income || 0;
     // '급여'를 아직 안 받았으면 예정액을 더한다 (환급·정산 같은 소액 수입은 월급으로 치지 않음)
     const salaryIn = monthEntries.some((e) => e.type === 'income' && e.category === 'salary');
-    const incomeToCome = salaryIn ? 0 : planned;
+    // 월급일이 지났는데 급여 기록이 없으면 이미 받은 달(앱 시작 전)로 보고 더하지 않는다
+    const payday = st().planned?.payday || 0;
+    const todayDay = Number(Ledger.today().slice(8, 10));
+    const paydayPassed = payday > 0 && nowYm === Ledger.thisMonth() && todayDay > payday;
+    const incomeToCome = salaryIn || paydayPassed ? 0 : planned;
     // 이번 달 대출 납입 중 아직 안 낸 금액 (가계부 '대출 상환' 기록만큼 차감)
     const loanDue = st().loans.filter(Loan.isValid).reduce((s, l) => {
       const row = Loan.schedule(l, l.extra).find((r) => r.ym === nowYm);
@@ -91,10 +100,10 @@ const Cash = (() => {
     const loanLeft = Math.max(0, loanDue - loanPaid);
     return {
       hasCash: !!c, asOf: c?.asOf || null, current: cur,
-      unpaid, unpaidTotal, incomeToCome, incomeSoFar, loanDue, loanPaid, loanLeft,
+      unpaid, unpaidTotal, incomeToCome, incomeSoFar, loanDue, loanPaid, loanLeft, paydayPassed: paydayPassed && !salaryIn,
       available: cur == null ? null : cur - unpaidTotal - loanLeft + incomeToCome,
     };
   }
 
-  return { bills, unpaidBills, markPaid, setCash, setPlannedIncome, now, summary, cardUsageByMonth };
+  return { bills, unpaidBills, markPaid, setCash, setPlannedIncome, setPayday, now, summary, cardUsageByMonth };
 })();

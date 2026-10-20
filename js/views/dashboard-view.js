@@ -56,12 +56,15 @@ const DashboardView = (() => {
         ? line('− 이번 달 대출 납입', won(c.loanLeft), c.loanPaid ? `${won(c.loanDue)} 중 ${won(c.loanPaid)} 냄` : `${Store.state.loans.filter(Loan.isValid).length}건 합계`, 'bill')
         : null,
       c.incomeToCome
-        ? line('+ 들어올 월급', won(c.incomeToCome), '예정', 'plus')
+        ? line('+ 들어올 월급', won(c.incomeToCome), Store.state.planned.payday ? `${Store.state.planned.payday}일 예정` : '예정', 'plus')
+        : c.paydayPassed ? line('월급', '기록 없음', '월급일이 지났는데 가계부에 급여가 없어요', 'muted-line')
         : c.incomeSoFar ? line('이번 달 수입', won(c.incomeSoFar), '반영됨', 'muted-line') : null,
       line('= 실제 쓸 수 있는 돈', won(c.available), null, 'total' + (c.available < 0 ? ' neg' : '')),
       el('div', { class: 'cash-actions' }, [
         el('button', { type: 'button', class: 'link-btn tiny', onclick: () => moneyPrompt('매달 들어올 예정 금액 (원)', Store.state.planned.income, (n) => { Cash.setPlannedIncome(n); render(root); }) },
           `월급 예정액 ${Store.state.planned.income ? won(Store.state.planned.income) : '설정'}`),
+        el('button', { type: 'button', class: 'link-btn tiny', onclick: () => { const v = prompt('월급일 (매달 며칠, 1~31)', Store.state.planned.payday || ''); if (v != null) { Cash.setPayday(Number(v) || 0); render(root); } } },
+          `월급일 ${Store.state.planned.payday ? Store.state.planned.payday + '일' : '설정'}`),
         paid ? el('button', { type: 'button', class: 'link-btn tiny', onclick: () => { Cash.markPaid(paid.ym, false); render(root); } }, `${ymLabel(paid.ym)} 결제 취소`) : null,
       ]),
       el('p', { class: 'muted small', style: 'margin:8px 0 0' }, '카드값은 가계부에서 "신용카드"로 기록한 지출을 달별로 합친 값, 대출 납입은 대출 탭 스케줄의 이번 달 금액입니다. 카드값은 "결제 완료"로, 대출은 가계부에 "대출 상환" 지출을 기록하면 반영됩니다.'),

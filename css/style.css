@@ -341,6 +341,11 @@ input[type="month"].input { min-height: 44px; }
 .refresh-note { font-size: 12px; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .btn.small.busy { opacity: 0.6; pointer-events: none; }
 
+/* ---------- 상환 계획 ---------- */
+.plan-now { margin-top: 12px; }
+.plan-now .callout { margin-top: 10px; }
+.plan-extra { white-space: normal !important; text-align: left !important; min-width: 140px; font-size: 12px; }
+
 /* ---------- 하단 탭바 ---------- */
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
