@@ -1,5 +1,5 @@
 /* 앱 진입점: 탭 전환, 서비스 워커 */
-const APP_VERSION = 'v14'; // sw.js의 CACHE 버전과 맞춘다
+const APP_VERSION = 'v15'; // sw.js의 CACHE 버전과 맞춘다
 (() => {
   const VIEWS = {
     dashboard: DashboardView,

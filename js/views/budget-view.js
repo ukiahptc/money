@@ -92,7 +92,17 @@ const BudgetView = (() => {
       const n = Math.floor(parseNum(inp.value));
       inp.value = n ? comma(n) : '';
     });
-    inp.addEventListener('change', () => { Budget.set(month, r.id, parseNum(inp.value)); render(root, true); });
+    // Safari(iOS) 엔진은 입력 중 값을 코드로 고쳐 쓰면 change를 안 띄우므로 blur·Enter에서 직접 저장
+    let committed = r.budget;
+    const commit = () => {
+      const n = Math.floor(parseNum(inp.value));
+      if (n === committed) return;
+      committed = n;
+      Budget.set(month, r.id, n);
+      render(root, true);
+    };
+    inp.addEventListener('blur', commit);
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
 
     let note;
     if (r.budget) note = over ? `${won(r.spent - r.budget)} 초과` : `${won(r.left)} 남음`;
@@ -169,8 +179,11 @@ const BudgetView = (() => {
 
   let rendering = false;
   function render(r, keepScroll) {
-    if (rendering) return; // 입력칸 blur로 change가 중복 발생해도 한 번만 그림
+    if (rendering) return; // 입력칸 blur로 저장이 중복 발생해도 한 번만 그림
     rendering = true;
+    try { renderInner(r, keepScroll); } finally { rendering = false; }
+  }
+  function renderInner(r, keepScroll) {
     root = r;
     const y = keepScroll ? window.scrollY : 0;
     const st = Budget.status(month);
@@ -195,7 +208,6 @@ const BudgetView = (() => {
       ]),
     ].filter(Boolean));
     if (keepScroll) window.scrollTo(0, y);
-    rendering = false;
   }
 
   return { render, openCategoryEditor };
