@@ -68,8 +68,9 @@ const Cash = (() => {
     const today = Ledger.today();
     let v = c.amount;
     for (const e of st().entries) {
-      if ((e.createdAt || 0) <= at) continue;
       if (e.date > today) continue; // 미리 적어둔 예정 지출(자동이체 등)은 그 날짜가 돼야 빠진다
+      // 스냅샷 뒤에 기록했거나, 스냅샷 날짜보다 뒤의 날짜면 스냅샷에 안 들어간 움직임
+      if ((e.createdAt || 0) <= at && e.date <= c.asOf) continue;
       if (e.type === 'income') v += e.amount;
       else if ((e.pay || 'card') === 'cash') v -= e.amount;
     }
