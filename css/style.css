@@ -320,6 +320,14 @@ input[type="month"].input { min-height: 44px; }
 .pay-badge { font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; margin-left: 6px; vertical-align: middle; }
 .pay-field .seg { grid-auto-columns: 1fr; }
 
+/* ---------- 순자산 · 투자 ---------- */
+.inv-list { margin-top: 10px; border-top: 1px solid var(--line); }
+.inv-row { display: block; width: 100%; text-align: left; font: inherit; color: var(--text); background: none; border: 0; border-bottom: 1px solid var(--line); padding: 10px 0; cursor: pointer; }
+.inv-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.inv-name { font-weight: 600; }
+.inv-sub { margin-top: 2px; }
+.inv-sub .neg { color: var(--danger); }
+
 /* ---------- 하단 탭바 ---------- */
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
