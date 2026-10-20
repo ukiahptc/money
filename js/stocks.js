@@ -44,7 +44,7 @@ const Stocks = (() => {
     return {
       price: Number(String(d.closePrice).replace(/,/g, '')),
       name: d.stockName,
-      change: Number(String(d.compareToPreviousClosePrice || '0').replace(/,/g, '')) * (d.compareToPreviousPrice?.code === '5' ? -1 : 1),
+      change: Number(String(d.compareToPreviousClosePrice || '0').replace(/,/g, '')), // 네이버가 부호를 이미 붙여서 줌 (예: "-1,010")
       ratio: Number(d.fluctuationsRatio || 0),
       time: d.localTradedAt || null,
       market: d.stockExchangeType?.nameKor || '',
