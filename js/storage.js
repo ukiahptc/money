@@ -39,6 +39,7 @@ const Store = (() => {
     if (!state.stocks) state.stocks = [];
     if (!state.settings) state.settings = { proxyUrl: '' };
     if (!state.plan) state.plan = { monthly: 0, buffer: 300000, order: 'auto' };
+    if (!state.plan.maturityFrom) state.plan.maturityFrom = 'cash';
     if (!state.recurring) state.recurring = [];
     if (!state.ui) state.ui = { tab: 'loan' };
   }

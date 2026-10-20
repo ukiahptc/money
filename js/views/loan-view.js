@@ -383,7 +383,16 @@ const LoanView = (() => {
       ]),
       thisMonthBox,
       el('p', { class: 'muted small', style: 'margin:10px 0 0' }, `순서: ${orderLabel}`),
-      el('p', { class: 'muted small', style: 'margin:4px 0 0' }, s.order === 'rate' ? '금리 높은 순입니다.' : '금리 높은 순이되, 만기일시 대출은 만기 전에 끝나도록 앞으로 당겼습니다.'),
+      el('p', { class: 'muted small', style: 'margin:4px 0 0' }, s.maturityFrom === 'invest' ? '만기일시 대출은 만기에 투자 자산을 회수해 갚는 것으로 계산해 금리 높은 순입니다.' : s.order === 'rate' ? '금리 높은 순입니다.' : '금리 높은 순이되, 만기일시 대출은 만기 전에 끝나도록 앞으로 당겼습니다.'),
+      ...(s.maturityFrom === 'invest' && t.actual.investEvents.length ? [(() => {
+        const nw = Invest.netWorth(Ledger.thisMonth());
+        const need = t.actual.investTotal;
+        const cover = nw.invFree ? Math.min(999, Math.round((nw.invFree / need) * 100)) : 0;
+        return el('div', { class: 'callout' + (nw.invFree >= need ? ' good' : ''), style: 'margin-top:10px' }, [
+          el('div', {}, [el('strong', {}, '투자 회수로 갚을 만기: '), t.actual.investEvents.map((e) => `${ymLabel(e.ym)} ${won(e.amount)} (${e.loans.map(name).join('·')})`).join(', ')]),
+          el('div', { class: 'small', style: 'margin-top:4px' }, `지금 투자 출금 가능분 ${won(nw.invFree)} → 필요액의 ${cover}%. ${nw.invFree >= need ? '이 금액은 손대지 않는 선으로 두세요.' : '부족분 ' + won(need - nw.invFree) + '은 그때까지 투자 수익이나 다른 돈으로 채워야 합니다.'}`),
+        ]);
+      })()] : []),
       el('details', { class: 'sched-details' }, [
         el('summary', {}, '월별 계획 보기'),
         table,
@@ -396,6 +405,11 @@ const LoanView = (() => {
           field('통장에 남길 최소 금액 (원)', bufferInp, el('span', { class: 'field-hint' }, '이번 달 추가 상환은 이 금액을 남기고 계산')),
         ]),
         el('div', { class: 'field' }, [
+          el('span', { class: 'field-label' }, '만기일시 대출 잔액은'),
+          U.segmented({ cash: '매달 여유분으로 미리 모음', invest: '만기에 투자 회수로' }, s.maturityFrom || 'cash', (k) => { s.maturityFrom = k; Store.save(); onRefresh(); }),
+          el('span', { class: 'field-hint' }, '투자 회수를 고르면 비상금 대출은 만기까지 이자만 내고, 추가 상환은 금리 높은 순으로 갑니다.'),
+        ]),
+        s.maturityFrom === 'invest' ? null : el('div', { class: 'field' }, [
           el('span', { class: 'field-label' }, '상환 순서'),
           U.segmented({ auto: '만기 지키며 금리순', rate: '금리순만' }, s.order || 'auto', (k) => { s.order = k; Store.save(); onRefresh(); }),
         ]),
