@@ -51,9 +51,11 @@ const Budget = (() => {
   function expectedIncome(ym) {
     const inc = (m) => Ledger.totals(Ledger.ofMonth(Store.state.entries, m)).income;
     const now = inc(ym);
-    if (now > 0) return { amount: now, from: ym };
     const planned = Store.state.planned?.income || 0;
-    if (planned > 0) return { amount: planned, from: 'planned' };
+    const salaryIn = Ledger.ofMonth(Store.state.entries, ym).some((e) => e.type === 'income' && e.category === 'salary');
+    if (salaryIn) return { amount: now, from: ym };
+    if (planned > 0) return { amount: now + planned, from: 'planned' }; // 소액 수입 + 아직 안 들어온 월급
+    if (now > 0) return { amount: now, from: ym };
     for (let k = 1; k <= 3; k++) {
       const m = Ledger.shiftMonth(ym, -k);
       const v = inc(m);

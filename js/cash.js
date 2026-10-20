@@ -76,14 +76,23 @@ const Cash = (() => {
     const cur = now();
     const unpaid = unpaidBills();
     const unpaidTotal = unpaid.reduce((s, b) => s + b.amount, 0);
-    const incomeSoFar = Ledger.totals(Ledger.ofMonth(st().entries, nowYm)).income;
+    const monthEntries = Ledger.ofMonth(st().entries, nowYm);
+    const incomeSoFar = Ledger.totals(monthEntries).income;
     const planned = st().planned?.income || 0;
-    // 월급을 아직 안 받았으면 예정액을 더한다
-    const incomeToCome = incomeSoFar > 0 ? 0 : planned;
+    // '급여'를 아직 안 받았으면 예정액을 더한다 (환급·정산 같은 소액 수입은 월급으로 치지 않음)
+    const salaryIn = monthEntries.some((e) => e.type === 'income' && e.category === 'salary');
+    const incomeToCome = salaryIn ? 0 : planned;
+    // 이번 달 대출 납입 중 아직 안 낸 금액 (가계부 '대출 상환' 기록만큼 차감)
+    const loanDue = st().loans.filter(Loan.isValid).reduce((s, l) => {
+      const row = Loan.schedule(l, l.extra).find((r) => r.ym === nowYm);
+      return s + (row ? row.payment : 0);
+    }, 0);
+    const loanPaid = monthEntries.filter((e) => e.type === 'expense' && e.category === 'loan').reduce((s, e) => s + e.amount, 0);
+    const loanLeft = Math.max(0, loanDue - loanPaid);
     return {
       hasCash: !!c, asOf: c?.asOf || null, current: cur,
-      unpaid, unpaidTotal, incomeToCome, incomeSoFar,
-      available: cur == null ? null : cur - unpaidTotal + incomeToCome,
+      unpaid, unpaidTotal, incomeToCome, incomeSoFar, loanDue, loanPaid, loanLeft,
+      available: cur == null ? null : cur - unpaidTotal - loanLeft + incomeToCome,
     };
   }
 

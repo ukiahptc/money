@@ -52,6 +52,9 @@ const DashboardView = (() => {
       ]),
       line('지금 가진 돈', won(c.current), c.asOf === Ledger.today() ? '오늘 기준' : `${c.asOf.slice(5).replace('-', '/')} 입력 후 가계부 반영`),
       ...billRows,
+      c.loanDue
+        ? line('− 이번 달 대출 납입', won(c.loanLeft), c.loanPaid ? `${won(c.loanDue)} 중 ${won(c.loanPaid)} 냄` : `${Store.state.loans.filter(Loan.isValid).length}건 합계`, 'bill')
+        : null,
       c.incomeToCome
         ? line('+ 들어올 월급', won(c.incomeToCome), '예정', 'plus')
         : c.incomeSoFar ? line('이번 달 수입', won(c.incomeSoFar), '반영됨', 'muted-line') : null,
@@ -61,7 +64,7 @@ const DashboardView = (() => {
           `월급 예정액 ${Store.state.planned.income ? won(Store.state.planned.income) : '설정'}`),
         paid ? el('button', { type: 'button', class: 'link-btn tiny', onclick: () => { Cash.markPaid(paid.ym, false); render(root); } }, `${ymLabel(paid.ym)} 결제 취소`) : null,
       ]),
-      el('p', { class: 'muted small', style: 'margin:8px 0 0' }, '카드값은 가계부에서 "신용카드"로 기록한 지출을 달별로 합친 값입니다. 결제일에 "결제 완료"를 누르면 보유 금액에서 빠집니다.'),
+      el('p', { class: 'muted small', style: 'margin:8px 0 0' }, '카드값은 가계부에서 "신용카드"로 기록한 지출을 달별로 합친 값, 대출 납입은 대출 탭 스케줄의 이번 달 금액입니다. 카드값은 "결제 완료"로, 대출은 가계부에 "대출 상환" 지출을 기록하면 반영됩니다.'),
     ]);
   }
 
